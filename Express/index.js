@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const express = require('express');
 const app = express();
 const artist = require('./Routes/artists');
+const user = require('./Routes/user');
+const music = require('./Routes/music');
+const ventas = require('./Routes/ventas');
 const DateRequest = require('./Middlwares/DateRequest');
 const RequestType = require('./Middlwares/RequestType');
 const morgan = require('morgan');
@@ -9,13 +12,16 @@ const port = process.env.PORT || 9090;
 
 app.use(express.json());
 app.use('/api/artists', artist);
-// app.listen(port);
+app.use('/api/user', user);
+app.use('/api/music', music);
+app.use('/api/ventas', ventas);
 
 app.listen(port, () => console.log(`Escuchando por el puerto: ${port}`));
 mongoose
   .connect('mongodb://localhost/JammingFestival', {
     useUnifiedTopology: true,
-    useNewUrlParser: true
+    useNewUrlParser: true,
+    useCreateIndex: true
   })
   .then(() => console.log('Conectado a MongoDB'))
   .catch(() => console.log('Error al conectar a MongoDB'));

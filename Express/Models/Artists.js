@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
+const { musicSchema } = require('./Music');
 const artistSchema = new mongoose.Schema({
+  /*music: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'music'
+  },*/
+  music: {
+    type: musicSchema,
+    required: true
+  },
   name: {
     type: String,
     required: true,

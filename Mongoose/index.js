@@ -23,12 +23,12 @@ const artistSchema = new mongoose.Schema({
 
 const Artist = mongoose.model('artist', artistSchema);
 
-deleteArtist('5daa213f6e03cc3ad0168156');
+// deleteArtist('id');
 async function deleteArtist(id) {
   const result = await Artist.deleteOne({ _id: id });
   console.log(result);
 }
-// updateArtist_2('5da9d12c3f2c5534681f5d30');
+// updateArtist_2('id');
 async function updateArtist_2(id) {
   const result = await Artist.update(
     { _id: id },
@@ -41,7 +41,7 @@ async function updateArtist_2(id) {
   console.log(result);
 }
 
-// updateArtist('5da9d12c3f2c5534681f5d30');
+// updateArtist('id');
 async function updateArtist(id) {
   const artist = await Artist.findById(id);
   if (!artist) return;
@@ -132,12 +132,13 @@ async function getArtistas() {
 // agregarArtista();
 async function agregarArtista() {
   const artist = new Artist({
-    name: '',
-    day: '',
-    integrantes: 0,
-    albums: 0,
-    origen: ', '
+    name: 'SHAMANES',
+    day: 'JAMMING',
+    integrantes: 4,
+    albums: 3,
+    origen: 'Santiago, Chile'
   });
   const result = await artist.save();
   console.log(result);
 }
+/** */
