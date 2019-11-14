@@ -1,41 +1,53 @@
-const mongoose = require('mongoose');
-const express = require('express');
-const Artists = require('../Models/Artists');
-const { Music } = require('../Models/Music');
+const mongoose = require("mongoose");
+const express = require("express");
+const Artists = require("../Models/Artists");
+const Role = require("./../Helpers/role");
+const authorize = require("../Middlwares/Role");
+const auth = require("./../Middlwares/AuthJWT");
+const { Music } = require("../Models/Music");
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
+const { check, validationResult } = require("express-validator");
 
 //GET Modelo de datos embebido
-router.get('/', async (req, res) => {
-  const artists = await Artists.find();
-  res.send(artists);
-});
+router.get(
+  "/",
+  [auth, authorize([Role.Admin, Role.User])],
+  async (req, res) => {
+    const artists = await Artists.find();
+    res.send(artists);
+  }
+);
 // GET Modelos de datos normalizado
 /*router.get('/', async (req, res) => {
   const artists = await Artists.find().populate('music', 'name genero');
   res.send(artists);
 }); */
 
-router.get('/:id', async (req, res) => {
-  const artist = await Artists.findById(req.params.id);
-  if (!artist)
-    return res.status(404).send('No se encontro ningún artista con ese ID');
-  res.send(artist);
-});
+router.get(
+  "/:id",
+  [auth, authorize([Role.Admin, Role.User])],
+  async (req, res) => {
+    const artist = await Artists.findById(req.params.id);
+    if (!artist)
+      return res.status(404).send("No se encontro ningún artista con ese ID");
+    res.send(artist);
+  }
+);
 
 /*POST */
 
 //Post Modelo de datos embebido
 router.post(
-  '/',
+  "/",
   [
-    check('name').isString(),
-    check('day').isString(),
-    check('integrantes').isNumeric(),
-    check('albums').isNumeric(),
-    check('origen').isString(),
-    check('extras').isArray()
+    check("name").isString(),
+    check("day").isString(),
+    check("integrantes").isNumeric(),
+    check("albums").isNumeric(),
+    check("origen").isString(),
+    check("extras").isArray()
   ],
+  [auth, authorize([Role.Admin, Role.User])],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -43,7 +55,7 @@ router.post(
     }
 
     const music = await Music.findById(req.body.musicId);
-    if (!music) return res.status(400).send('No tenemos esa canción');
+    if (!music) return res.status(400).send("No tenemos esa canción");
 
     const artist = new Artists({
       music: music,
@@ -92,15 +104,16 @@ router.post(
 
 /* PUT */
 router.put(
-  '/:id',
+  "/:id",
   [
-    check('name').isString(),
-    check('day').isString(),
-    check('integrantes').isNumeric(),
-    check('albums').isNumeric(),
-    check('origen').isString(),
-    check('extras').isArray()
+    check("name").isString(),
+    check("day").isString(),
+    check("integrantes").isNumeric(),
+    check("albums").isNumeric(),
+    check("origen").isString(),
+    check("extras").isArray()
   ],
+  [auth, authorize([Role.Admin, Role.User])],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -121,7 +134,7 @@ router.put(
     if (!artist) {
       return res
         .status(404)
-        .send('El artista con el ID introducido no existe.');
+        .send("El artista con el ID introducido no existe.");
     }
     artist.name = req.body.name;
     artist.day = req.body.day;
@@ -131,12 +144,18 @@ router.put(
 );
 
 /* DELETE */
-router.delete('/:id', async (req, res) => {
-  const artist = await Artists.findByIdAndDelete(req.params.id);
-  if (!artist) {
-    return res.status(404).send('El artista con el ID introducido no existe.');
+router.delete(
+  "/:id",
+  [auth, authorize([Role.Admin, Role.User])],
+  async (req, res) => {
+    const artist = await Artists.findByIdAndDelete(req.params.id);
+    if (!artist) {
+      return res
+        .status(404)
+        .send("El artista con el ID introducido no existe.");
+    }
+    res.status(204).send("Artista eliminado");
   }
-  res.status(204).send('Artista eliminado');
-});
+);
 
 module.exports = router;

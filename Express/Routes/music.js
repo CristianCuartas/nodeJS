@@ -1,25 +1,37 @@
-const express = require('express');
-const { Music } = require('../Models/Music');
+const express = require("express");
+const { Music } = require("../Models/Music");
 const router = express.Router();
-const { check, validationResult } = require('express-validator');
+const { check, validationResult } = require("express-validator");
+const Role = require("./../Helpers/role");
+const authorize = require("../Middlwares/Role");
+const auth = require("./../Middlwares/AuthJWT");
 
-router.get('/', async (req, res) => {
-  const songs = await Music.find();
-  res.send(songs);
-});
+router.get(
+  "/",
+  [auth, authorize([Role.Admin, Role.Editor])],
+  async (req, res) => {
+    const songs = await Music.find();
+    res.send(songs);
+  }
+);
 
-router.get('/:id', async (req, res) => {
-  const song = await Music.findById(req.params.id);
-  if (!song)
-    return res.status(404).send('No se encontro ninguna canción con ese ID');
-  res.send(song);
-});
+router.get(
+  "/:id",
+  [auth, authorize([Role.Admin, Role.User, Role.Editor])],
+  async (req, res) => {
+    const song = await Music.findById(req.params.id);
+    if (!song)
+      return res.status(404).send("No se encontro ninguna canción con ese ID");
+    res.send(song);
+  }
+);
 
 /*POST */
 
 router.post(
-  '/',
-  [check('name').isString(), check('genero').isString()],
+  "/",
+  [check("name").isString(), check("genero").isString()],
+  [auth, authorize([Role.Admin, Role.User, Role.Editor])],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -36,8 +48,9 @@ router.post(
 
 /* PUT */
 router.put(
-  '/:id',
-  [check('name').isString(), check('genero').isString()],
+  "/:id",
+  [check("name").isString(), check("genero").isString()],
+  [auth, authorize([Role.Admin, Role.User, Role.Editor])],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -54,19 +67,25 @@ router.put(
     if (!music) {
       return res
         .status(404)
-        .send('La canción con el ID introducido no existe.');
+        .send("La canción con el ID introducido no existe.");
     }
     res.status(200).send();
   }
 );
 
 /* DELETE */
-router.delete('/:id', async (req, res) => {
-  const music = await Music.findByIdAndDelete(req.params.id);
-  if (!music) {
-    return res.status(404).send('La canción con el ID introducido no existe.');
+router.delete(
+  "/:id",
+  [auth, authorize([Role.Admin, Role.Editor])],
+  async (req, res) => {
+    const music = await Music.findByIdAndDelete(req.params.id);
+    if (!music) {
+      return res
+        .status(404)
+        .send("La canción con el ID introducido no existe.");
+    }
+    res.status(204).send("Canción eliminada");
   }
-  res.status(204).send('Canción eliminada');
-});
+);
 
 module.exports = router;
